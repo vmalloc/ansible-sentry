@@ -1,0 +1,8 @@
+- name: fix permissions and ownerships
+  shell: chown -R $user_name:$group_name $item
+  with_items:
+    - $deploy_root
+- name: reload supervisor
+  shell: supervisorctl reload
+- name: restart nginx
+  action: service name=nginx state=restarted

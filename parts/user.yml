@@ -1,0 +1,9 @@
+- hosts: target
+  vars_files: 
+    - ../vars.yml
+  tasks:
+    - name: setup group
+      action: group name=$group_name state=present
+    - name: setup user
+      action: user name=$user_name state=present group=$group_name
+  

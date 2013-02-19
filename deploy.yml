@@ -1,0 +1,48 @@
+- include: parts/user.yml
+- include: parts/db.yml
+- hosts: target
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: set up packages
+      action: apt pkg=$item state=latest
+      with_items:
+        - nginx
+        - supervisor
+        - python-virtualenv
+        - memcached
+        - libmemcached-dev
+    - name: ensure directories
+      action: file state=directory path=$item owner=$user_name group=$group_name
+      with_items:
+        - $deploy_root
+        - $deploy_root/conf
+    - name: virtualenv
+      action: shell virtualenv $virtualenv creates=$virtualenv
+    - name: required python packages
+      action: pip name=$item virtualenv=$virtualenv
+      with_items:
+        - psycopg2
+        - python-memcached
+        - django-pylibmc
+    - name: install sentry
+      action: shell $virtualenv/bin/easy_install -UZ sentry creates=$virtualenv/bin/sentry
+    - name: sentry configuration
+      action: template src=templates/sentry.conf.py dest=$sentry_conf_file
+      notify: 
+        - reload supervisor
+    - name: migrate db
+      shell: $virtualenv/bin/sentry --config=$sentry_conf_file upgrade --noinput
+    - name: nginx configuration
+      action: template src=templates/nginx-site.j2 dest=/etc/nginx/sites-enabled/sentry.conf
+      notify: restart nginx
+    - name: nginx running
+      action: service name=nginx state=started
+    - name: ensure no nginx default conf
+      action: file path=/etc/nginx/sites-enabled/default state=absent
+      notify: restart nginx
+    - name: configure supervisor
+      action: template src=templates/supervisor.j2 dest=/etc/supervisor/conf.d/sentry.conf
+      notify: reload supervisor
+  handlers:
+    - include: parts/handlers.yml

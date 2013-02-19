@@ -1,0 +1,10 @@
+user_name: sentry
+group_name: sentry
+deploy_root: /opt/sentry
+virtualenv: $deploy_root/virtualenv
+conf_dir: $deploy_root/conf
+sentry_conf_file: $conf_dir/sentry.conf.py
+secret_key: {secret_key}
+smtp_server: {smtp_server}
+root_url: {root_url}
+server_email: {server_email}

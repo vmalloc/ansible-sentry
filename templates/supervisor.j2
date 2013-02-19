@@ -1,0 +1,6 @@
+[program:sentry-web]
+directory={{deploy_root}}
+command={{virtualenv}}/bin/sentry --config={{sentry_conf_file}} start http
+autostart=true
+autorestart=true
+redirect_stderr=true

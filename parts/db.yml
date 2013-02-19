@@ -1,0 +1,23 @@
+- hosts: target
+  vars_files: ../vars.yml
+  tasks:
+    - name: install prerequisites
+      action: apt pkg=$item state=latest
+      with_items:
+        - python-psycopg2
+        - python-dev
+        - postgresql-9.1
+        - postgresql-server-dev-9.1
+- hosts: target
+  vars_files: 
+    - ../vars.yml
+  sudo: yes
+  sudo_user: postgres
+  tasks:
+    - name: setup db
+      action: postgresql_db name=sentry
+    - name: setup user
+      action: postgresql_user name=sentry password=sentry db=sentry priv=ALL role_attr_flags=SUPERUSER
+  handlers:
+    - include: handlers.yml
+  
